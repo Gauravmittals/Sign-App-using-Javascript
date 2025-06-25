@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        box-sizing: border-box;
+      }
+      body {
+        display: flex;
+        padding: 0 10px;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: orange;
+      }
+      .wrapper {
+        width: 770px;
+        padding: 35px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+      }
+      .wrapper .content-box {
+        padding: 13px 20px 0;
+        border-radius: 10px;
+        border: 1px solid #bfbfbf;
+      }
+      .wrapper .input-field {
+        opacity: 0;
+        position: absolute;
+      }
+      .content-box .content {
+        margin: 17px;
+        display: flex;
+        padding: 12px 0;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #bfbfbf;
+      }
+      .content .result-details {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        width: calc(100% - 140px);
+      }
+      .content button {
+        width: 105px;
+        padding: 8px 0;
+        outline: none;
+        border: none;
+        color: white;
+        background-color: orange;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.3 ease;
+      }
+      .content button:active {
+        transform: scale(0.94);
+      }
+      .typingtext p span {
+        position: relative;
+      }
+      .typingtext p span.active {
+        color: orange;
+      }
+      .typingtext p span.correct {
+        color: green;
+      }
+      .typingtext p span.incorrect {
+        color: red;
+        outline: 1px solid white;
+        background: #ffc0cb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <input type="text" class="input-field" />
+      <div class="content-box">
+        <div class="typingtext">
+          <p></p>
+        </div>
+        <div class="content">
+          <ul class="result-details" type="none">
+            <li class="time">
+              Time Left: <span><b>60</b>s</span>
+            </li>
+
+            <li class="mistake">
+              Mistakes: <span><b>0</b></span>
+            </li>
+            <li class="wpm">
+              WPM: <span><b>0</b></span>
+            </li>
+            <li class="cpm">
+              CPM: <span><b>0</b></span>
+            </li>
+          </ul>
+          <button class="tryagain">Try Again</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const input = document.querySelector(".wrapper .input-field ");
+      const typingtext = document.querySelector(".typingtext p");
+      const time = document.querySelector(".time span b");
+      const mistake = document.querySelector(".mistake span");
+      const wpm = document.querySelector(".wpm span");
+      const cpm = document.querySelector(".cpm span");
+      const btn = document.querySelector("button");
+
+      //
+      let timer;
+      let maxTime = 60;
+      let leftTime = maxTime;
+      let charIndex = 0;
+      let mistakes = 0;
+      let istyping = false;
+
+      function loadParagraphs() {
+        const paragraphs = [
+          "The quick brown fox jumps over the lazy dog.",
+          "Typing is a skill that improves with consistent practice.",
+          "JavaScript is a versatile language used for both front-end and back-end development.",
+          "React helps developers build user interfaces using reusable components.",
+          "Vite offers lightning-fast development experience for modern web projects.",
+          "Accuracy is just as important as speed when it comes to typing tests.",
+          "Challenge yourself daily to become a faster and more accurate typist.",
+          "Short sentences can help beginners build up confidence in their typing.",
+          "Every developer should strive to improve both their speed and their precision.",
+          "Success in coding often comes from mastering the basics through repetition.",
+        ];
+        const randomm = Math.floor(Math.random() * paragraphs.length);
+        typingtext.innerHTML = "";
+        for (const char of paragraphs[randomm]) {
+          typingtext.innerHTML += `<span>${char}</span>`;
+        }
+        typingtext.querySelectorAll("span")[0].classList.add("active");
+        document.addEventListener("keydown", () => {
+          input.focus();
+        });
+        typingtext.addEventListener("click", () => {
+          input.focus();
+        });
+      }
+      function isitTyping() {
+        const char = document.querySelectorAll("span");
+        const typedChar = input.value.charAt(charIndex);
+        if (charIndex < char.length && leftTime > 0) {
+          if (!istyping) {
+            timer = setInterval(initTime, 1000);
+            istyping = true;
+          }
+          if (char[charIndex].innerHTML === typedChar) {
+            char[charIndex].classList.add("correct");
+          } else {
+            mistakes++;
+            char[charIndex].classList.add("incorrect");
+          }
+          charIndex++;
+          char[charIndex].classList.add("active");
+          mistake.innerText = mistakes;
+        } else {
+          clearInterval(timer);
+          input.value = "";
+        }
+      }
+
+      function initTime() {
+        if (leftTime > 0) {
+          leftTime--;
+          time.innerText = leftTime;
+          const wpmm = Math.round(
+            ((charIndex - mistakes) / 5 / (maxTime - leftTime)) * 60
+          );
+          wpm.innerText = wpmm;
+          cpm.innerText = charIndex - mistakes;
+        } else {
+          clearInterval(timer);
+        }
+      }
+
+      function reset() {
+        loadParagraphs();
+        clearInterval(timer);
+        leftTime = maxTime;
+        time.innerText = leftTime;
+        input.value = "";
+        charIndex = 0;
+        wpm.innerText = 0;
+        cpm.innerText = 0;
+        mistake.innerText = 0;
+        istyping = false;
+      }
+      input.addEventListener("input", isitTyping);
+      btn.addEventListener("click", reset);
+
+      loadParagraphs();
+    </script>
+  </body>
+</html>
